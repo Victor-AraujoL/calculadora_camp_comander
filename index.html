@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Campeonato Commander</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#141019;
+    --panel:#1e1829;
+    --panel2:#251f34;
+    --border:#3a3350;
+    --gold:#d4af37;
+    --gold-dim:#8a7226;
+    --text:#f0ecdc;
+    --text-dim:#a99fc4;
+    --danger:#e2545a;
+    --success:#4fae7a;
+    --w:#f8f6d8; --u:#5b8fd6; --b:#7c7c86; --r:#d9694a; --g:#5aa15c;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  h1,h2,h3{font-family:'Cinzel',serif;font-weight:700;margin:0 0 4px;letter-spacing:.02em;}
+  .pips{display:flex;gap:5px;justify-content:center;padding:14px 0 4px;}
+  .pip{width:9px;height:9px;border-radius:50%;}
+  .pip.w{background:var(--w);} .pip.u{background:var(--u);} .pip.b{background:var(--b);}
+  .pip.r{background:var(--r);} .pip.g{background:var(--g);}
+  header{text-align:center;padding:0 20px 18px;border-bottom:1px solid var(--border);margin-bottom:22px;}
+  header h1{font-size:22px;color:var(--gold);}
+  header p{font-size:12px;color:var(--text-dim);margin:0;text-transform:uppercase;letter-spacing:.12em;}
+  .wrap{max-width:520px;margin:0 auto;padding:0 16px;}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;}
+  label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;}
+  input[type=number], input[type=text]{
+    width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);
+    padding:11px 12px;border-radius:8px;font-size:16px;font-family:inherit;margin-bottom:14px;
+  }
+  input:focus{outline:none;border-color:var(--gold-dim);}
+  .btn{
+    display:block;width:100%;background:var(--gold);color:#14100f;border:none;
+    padding:13px;border-radius:8px;font-size:15px;font-weight:700;font-family:inherit;
+    cursor:pointer;text-align:center;margin-top:6px;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn.secondary{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);}
+  .btn.small{padding:9px;font-size:13px;width:auto;display:inline-block;margin-right:8px;}
+  .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text-dim);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .hint{font-size:12px;color:var(--text-dim);line-height:1.5;margin-top:-6px;margin-bottom:14px;}
+  .table-block{border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;background:var(--panel2);}
+  .table-block h3{color:var(--gold);font-size:14px;margin-bottom:10px;}
+  .player-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:14px;}
+  .player-row:last-child{border-bottom:none;}
+  .pts{color:var(--gold);font-weight:600;font-size:13px;}
+  .timer{
+    font-family:'Cinzel',serif;font-size:52px;text-align:center;color:var(--gold);
+    letter-spacing:.03em;margin:10px 0 4px;
+  }
+  .timer.done{color:var(--danger);}
+  .timer-row{display:flex;gap:10px;}
+  .timer-row .btn{width:auto;}
+  .timer-row .btn:first-child{flex:1;}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);color:var(--text-dim);
+    font-size:11px;padding:3px 9px;border-radius:20px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;}
+  .badge.gold{border-color:var(--gold-dim);color:var(--gold);}
+  .mode-toggle{display:flex;gap:8px;margin-bottom:10px;}
+  .mode-toggle button{flex:1;padding:9px;border-radius:7px;border:1px solid var(--border);background:var(--panel);
+    color:var(--text-dim);font-size:12px;font-family:inherit;cursor:pointer;}
+  .mode-toggle button.active{background:var(--gold);border-color:var(--gold);color:#14100f;font-weight:700;}
+  .radio-row, .check-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;}
+  .radio-row:last-child, .check-row:last-child{border-bottom:none;}
+  .radio-row input, .check-row input{width:18px;height:18px;margin:0;accent-color:var(--gold);}
+  table.standings{width:100%;border-collapse:collapse;font-size:14px;}
+  table.standings th{text-align:left;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;
+    padding:6px 4px;border-bottom:1px solid var(--border);}
+  table.standings td{padding:8px 4px;border-bottom:1px solid var(--border);}
+  table.standings tr:last-child td{border-bottom:none;}
+  .rank1{color:var(--gold);font-weight:700;}
+  .champion-box{text-align:center;padding:32px 16px;}
+  .champion-box .trophy{font-size:44px;margin-bottom:6px;}
+  .champion-box h2{font-size:26px;color:var(--gold);margin-bottom:4px;}
+  .champion-box p{color:var(--text-dim);font-size:13px;}
+  .error{color:var(--danger);font-size:13px;margin-top:-8px;margin-bottom:12px;}
+  .rule-note{font-size:12px;color:var(--text-dim);background:var(--panel2);border-left:3px solid var(--gold-dim);
+    padding:10px 12px;border-radius:6px;margin-bottom:14px;line-height:1.5;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="pips"><span class="pip w"></span><span class="pip u"></span><span class="pip b"></span><span class="pip r"></span><span class="pip g"></span></div>
+  <h1>Campeonato Commander</h1>
+  <p>Chaveamento &middot; Cronômetro &middot; Classificação</p>
+</header>
+<div class="wrap" id="app"></div>
+
+<script>
+const app = document.getElementById('app');
+
+const state = {
+  screen: 'setup',
+  n: 8,
+  rounds: 3,
+  minutes: 60,
+  tableSizes: [],
+  players: [],
+  currentRound: 1,
+  tables: [],
+  timerSeconds: 0,
+  timerRunning: false,
+  timerInterval: null,
+  tableResults: {},
+  decider: null
+};
+
+function computeTableSizes(n){
+  const q = Math.floor(n/4), r = n%4;
+  let sizes = [];
+  if(r===0) sizes = Array(q).fill(4);
+  else if(r===1) sizes = [...Array(q-2).fill(4), 3,3,3];
+  else if(r===2) sizes = [...Array(q-1).fill(4), 3,3];
+  else sizes = [...Array(q).fill(4), 3];
+  return sizes.sort((a,b)=>b-a);
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function fmtTime(s){
+  const m = Math.floor(s/60), sec = s%60;
+  return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+}
+
+function assignTables(playerList){
+  const tables = [];
+  let idx = 0;
+  for(const size of state.tableSizes){
+    tables.push(playerList.slice(idx, idx+size).map(p=>p.id));
+    idx += size;
+  }
+  return tables;
+}
+
+function startRound(roundNum){
+  state.currentRound = roundNum;
+  state.tableResults = {};
+  let ordered;
+  if(roundNum === 1){
+    ordered = shuffle(state.players);
+  } else {
+    const byPoints = {};
+    state.players.forEach(p=>{
+      byPoints[p.points] = byPoints[p.points] || [];
+      byPoints[p.points].push(p);
+    });
+    const pointValues = Object.keys(byPoints).map(Number).sort((a,b)=>b-a);
+    ordered = [];
+    pointValues.forEach(v=>{ ordered.push(...shuffle(byPoints[v])); });
+  }
+  state.tables = assignTables(ordered);
+  state.timerSeconds = state.minutes*60;
+  state.timerRunning = false;
+  clearInterval(state.timerInterval);
+  state.screen = 'round';
+  render();
+}
+
+function toggleTimer(){
+  if(state.timerRunning){
+    clearInterval(state.timerInterval);
+    state.timerRunning = false;
+  } else {
+    state.timerRunning = true;
+    state.timerInterval = setInterval(()=>{
+      if(state.timerSeconds > 0){
+        state.timerSeconds--;
+        updateTimerDisplay();
+      } else {
+        clearInterval(state.timerInterval);
+        state.timerRunning = false;
+        updateTimerDisplay();
+      }
+    }, 1000);
+  }
+  render();
+}
+
+function resetTimer(){
+  clearInterval(state.timerInterval);
+  state.timerRunning = false;
+  state.timerSeconds = (state.screen==='decider-round' ? state.decider.minutes : state.minutes)*60;
+  render();
+}
+
+function updateTimerDisplay(){
+  const el = document.getElementById('timer-display');
+  if(el){
+    el.textContent = fmtTime(state.timerSeconds);
+    el.className = 'timer' + (state.timerSeconds===0 ? ' done':'');
+  }
+}
+
+function playerName(id){
+  const p = state.players.find(x=>x.id===id) || (state.decider && state.decider.players.find(x=>x.id===id));
+  return p ? p.name : '?';
+}
+
+function goResults(){
+  clearInterval(state.timerInterval);
+  state.timerRunning = false;
+  state.tables.forEach((t,i)=>{
+    if(!state.tableResults[i]) state.tableResults[i] = { mode:'winner', winner:null, survivors:[] };
+  });
+  state.screen = 'results';
+  render();
+}
+
+function setMode(ti, mode){
+  state.tableResults[ti].mode = mode;
+  render();
+}
+function setWinner(ti, pid){
+  state.tableResults[ti].winner = pid;
+}
+function toggleSurvivor(ti, pid){
+  const arr = state.tableResults[ti].survivors;
+  const idx = arr.indexOf(pid);
+  if(idx>=0) arr.splice(idx,1); else arr.push(pid);
+}
+
+function confirmRoundResults(){
+  for(let i=0;i<state.tables.length;i++){
+    const res = state.tableResults[i];
+    if(res.mode==='winner' && !res.winner){
+      showError('Selecione o vencedor de cada mesa antes de confirmar.');
+      return;
+    }
+  }
+  state.tables.forEach((t,i)=>{
+    const res = state.tableResults[i];
+    if(res.mode==='winner'){
+      t.forEach(pid=>{
+        const p = state.players.find(x=>x.id===pid);
+        p.points += (pid===res.winner ? 2 : 0);
+      });
+    } else {
+      t.forEach(pid=>{
+        const p = state.players.find(x=>x.id===pid);
+        p.points += (res.survivors.includes(pid) ? 1 : 0);
+      });
+    }
+  });
+  state.screen = 'standings';
+  render();
+}
+
+function showError(msg){
+  const el = document.getElementById('err');
+  if(el) el.textContent = msg;
+}
+
+function nextAfterStandings(){
+  if(state.currentRound < state.rounds){
+    startRound(state.currentRound+1);
+  } else {
+    checkFinal();
+  }
+}
+
+function checkFinal(){
+  const maxPts = Math.max(...state.players.map(p=>p.points));
+  const tied = state.players.filter(p=>p.points===maxPts);
+  if(tied.length > 1){
+    state.decider = { players: tied.map(p=>({id:p.id,name:p.name})), minutes:45, table:null, result:null };
+    state.screen = 'decider-setup';
+  } else {
+    state.screen = 'champion';
+    state.champion = tied[0];
+  }
+  render();
+}
+
+function startDeciderRound(){
+  state.decider.table = state.decider.players.map(p=>p.id);
+  state.timerSeconds = state.decider.minutes*60;
+  state.timerRunning = false;
+  clearInterval(state.timerInterval);
+  state.deciderResult = { mode:'winner', winner:null, survivors:[] };
+  state.screen = 'decider-round';
+  render();
+}
+
+function goDeciderResults(){
+  clearInterval(state.timerInterval);
+  state.timerRunning = false;
+  state.screen = 'decider-results';
+  render();
+}
+
+function confirmDecider(){
+  const res = state.deciderResult;
+  if(res.mode==='winner'){
+    if(!res.winner){ showError('Selecione o vencedor.'); return; }
+    state.champion = state.decider.players.find(p=>p.id===res.winner);
+    state.screen = 'champion';
+  } else {
+    const survivors = state.decider.players.filter(p=>res.survivors.includes(p.id));
+    if(survivors.length===1){
+      state.champion = survivors[0];
+      state.screen = 'champion';
+    } else if(survivors.length===0){
+      showError('Ao menos um jogador precisa sobreviver. Ajuste a seleção.');
+      return;
+    } else {
+      state.decider.players = survivors;
+      state.screen = 'decider-setup';
+    }
+  }
+  render();
+}
+
+function resetApp(){
+  clearInterval(state.timerInterval);
+  Object.assign(state, {
+    screen:'setup', n:8, rounds:3, minutes:60, tableSizes:[], players:[],
+    currentRound:1, tables:[], timerSeconds:0, timerRunning:false, timerInterval:null,
+    tableResults:{}, decider:null
+  });
+  render();
+}
+
+function render(){
+  if(state.screen==='setup') return renderSetup();
+  if(state.screen==='names') return renderNames();
+  if(state.screen==='round') return renderRound();
+  if(state.screen==='results') return renderResults();
+  if(state.screen==='standings') return renderStandings();
+  if(state.screen==='decider-setup') return renderDeciderSetup();
+  if(state.screen==='decider-round') return renderDeciderRound();
+  if(state.screen==='decider-results') return renderDeciderResults();
+  if(state.screen==='champion') return renderChampion();
+}
+
+function renderSetup(){
+  const sizes = computeTableSizes(state.n);
+  const desc = sizes.reduce((acc,s)=>{acc[s]=(acc[s]||0)+1;return acc;},{});
+  const descTxt = Object.entries(desc).map(([s,c])=>`${c} mesa${c>1?'s':''} de ${s}`).join(' + ');
+  app.innerHTML = `
+    <div class="card">
+      <h2>Configurar campeonato</h2>
+      <div class="hint">Formato Commander &middot; 8 a 24 jogadores.</div>
+      <label>Número de jogadores</label>
+      <input type="number" id="in-n" min="8" max="24" value="${state.n}">
+      <div class="badge gold" id="sizes-badge">${descTxt}</div>
+      <label>Número de rodadas</label>
+      <input type="number" id="in-rounds" min="1" max="8" value="${state.rounds}">
+      <label>Duração de cada partida (minutos)</label>
+      <input type="number" id="in-minutes" min="10" max="180" value="${state.minutes}">
+      <div id="err" class="error"></div>
+      <button class="btn" id="btn-continue">Continuar</button>
+    </div>
+  `;
+  document.getElementById('in-n').addEventListener('input', e=>{
+    let v = parseInt(e.target.value)||0;
+    document.getElementById('sizes-badge').textContent = v>=8 && v<=24 ?
+      (()=>{ const s=computeTableSizes(v); const d={}; s.forEach(x=>d[x]=(d[x]||0)+1);
+        return Object.entries(d).map(([sz,c])=>`${c} mesa${c>1?'s':''} de ${sz}`).join(' + '); })() : '—';
+  });
+  document.getElementById('btn-continue').addEventListener('click', ()=>{
+    const n = parseInt(document.getElementById('in-n').value);
+    const rounds = parseInt(document.getElementById('in-rounds').value);
+    const minutes = parseInt(document.getElementById('in-minutes').value);
+    if(!n || n<8 || n>24){ showError('Informe de 8 a 24 jogadores.'); return; }
+    if(!rounds || rounds<1){ showError('Informe ao menos 1 rodada.'); return; }
+    if(!minutes || minutes<5){ showError('Informe uma duração válida.'); return; }
+    state.n = n; state.rounds = rounds; state.minutes = minutes;
+    state.tableSizes = computeTableSizes(n);
+    state.players = Array.from({length:n}, (_,i)=>({id:'p'+i, name:'', points:0}));
+    state.screen = 'names';
+    render();
+  });
+}
+
+function renderNames(){
+  app.innerHTML = `
+    <div class="card">
+      <h2>Jogadores</h2>
+      <div class="hint">Digite o nome ou apelido de cada participante.</div>
+      ${state.players.map((p,i)=>`<input type="text" id="name-${i}" placeholder="Jogador ${i+1}" value="${p.name}">`).join('')}
+      <div id="err" class="error"></div>
+      <button class="btn ghost" id="btn-back" style="margin-bottom:8px;">Voltar</button>
+      <button class="btn" id="btn-start">Sortear rodada 1</button>
+    </div>
+  `;
+  document.getElementById('btn-back').addEventListener('click', ()=>{ state.screen='setup'; render(); });
+  document.getElementById('btn-start').addEventListener('click', ()=>{
+    let ok = true;
+    state.players.forEach((p,i)=>{
+      const v = document.getElementById('name-'+i).value.trim();
+      if(!v) ok = false;
+      p.name = v || ('Jogador '+(i+1));
+    });
+    if(!ok){ showError('Preencha o nome de todos os jogadores.'); return; }
+    startRound(1);
+  });
+}
+
+function renderRound(){
+  const sizesTxt = state.tableSizes.map(s=>s+'p').join(', ');
+  app.innerHTML = `
+    <div class="badge gold">Rodada ${state.currentRound} de ${state.rounds}</div>
+    <div class="card">
+      <div id="timer-display" class="timer${state.timerSeconds===0?' done':''}">${fmtTime(state.timerSeconds)}</div>
+      <div class="timer-row">
+        <button class="btn secondary" id="btn-toggle" style="flex:1;">${state.timerRunning?'Pausar':'Iniciar cronômetro'}</button>
+        <button class="btn ghost" id="btn-reset" style="flex:0 0 auto;padding:13px 16px;">Zerar</button>
+      </div>
+      <div class="rule-note">Quando o tempo acabar, finalizem o turno em andamento e mais 1 turno completo cada jogador. Se ninguém vencer, é empate — os sobreviventes marcam 1 ponto.</div>
+      <button class="btn" id="btn-results">Registrar resultados</button>
+    </div>
+    ${state.tables.map((t,i)=>`
+      <div class="table-block">
+        <h3>Mesa ${i+1} &middot; ${t.length} jogadores</h3>
+        ${t.map(pid=>`<div class="player-row"><span>${playerName(pid)}</span><span class="pts">${state.players.find(p=>p.id===pid).points} pts</span></div>`).join('')}
+      </div>
+    `).join('')}
+  `;
+  document.getElementById('btn-toggle').addEventListener('click', toggleTimer);
+  document.getElementById('btn-reset').addEventListener('click', resetTimer);
+  document.getElementById('btn-results').addEventListener('click', goResults);
+}
+
+function renderResults(){
+  app.innerHTML = `
+    <div class="badge gold">Resultados &middot; Rodada ${state.currentRound}</div>
+    ${state.tables.map((t,i)=>{
+      const res = state.tableResults[i];
+      return `
+      <div class="table-block">
+        <h3>Mesa ${i+1}</h3>
+        <div class="mode-toggle">
+          <button class="mode-${i} ${res.mode==='winner'?'active':''}" data-ti="${i}" data-mode="winner">Houve vencedor</button>
+          <button class="mode-${i} ${res.mode==='draw'?'active':''}" data-ti="${i}" data-mode="draw">Partida Empatada</button>
+        </div>
+        <div id="mode-body-${i}"></div>
+      </div>`;
+    }).join('')}
+    <div id="err" class="error"></div>
+    <button class="btn" id="btn-confirm">Confirmar rodada</button>
+  `;
+  state.tables.forEach((t,i)=> renderModeBody(i));
+  document.querySelectorAll('[data-mode]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const ti = parseInt(btn.dataset.ti);
+      setMode(ti, btn.dataset.mode);
+    });
+  });
+  document.getElementById('btn-confirm').addEventListener('click', confirmRoundResults);
+}
+
+function renderModeBody(ti){
+  const body = document.getElementById('mode-body-'+ti);
+  const t = state.tables[ti];
+  const res = state.tableResults[ti];
+  if(res.mode==='winner'){
+    body.innerHTML = t.map(pid=>`
+      <label class="radio-row">
+        <input type="radio" name="winner-${ti}" value="${pid}" ${res.winner===pid?'checked':''}>
+        ${playerName(pid)}
+      </label>
+    `).join('');
+    body.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('change', ()=> setWinner(ti, inp.value));
+    });
+  } else {
+    body.innerHTML = `<div class="hint" style="margin-bottom:8px;">Marque quem sobreviveu até o fim do tempo (1 ponto cada). Os demais ficam de fora (0 pontos).</div>` +
+      t.map(pid=>`
+      <label class="check-row">
+        <input type="checkbox" value="${pid}" ${res.survivors.includes(pid)?'checked':''}>
+        ${playerName(pid)}
+      </label>
+    `).join('');
+    body.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('change', ()=> toggleSurvivor(ti, inp.value));
+    });
+  }
+}
+
+function renderStandingsTable(players){
+  const sorted = players.slice().sort((a,b)=>b.points-a.points);
+  return `
+    <table class="standings">
+      <tr><th>#</th><th>Jogador</th><th>Pontos</th></tr>
+      ${sorted.map((p,i)=>`<tr><td class="${i===0?'rank1':''}">${i+1}</td><td class="${i===0?'rank1':''}">${p.name}</td><td class="${i===0?'rank1':''}">${p.points}</td></tr>`).join('')}
+    </table>
+  `;
+}
+
+function renderStandings(){
+  const isLast = state.currentRound >= state.rounds;
+  app.innerHTML = `
+    <div class="badge gold">Classificação após rodada ${state.currentRound}</div>
+    <div class="card">
+      ${renderStandingsTable(state.players)}
+    </div>
+    <button class="btn" id="btn-next">${isLast ? 'Ver classificação final' : 'Iniciar rodada '+(state.currentRound+1)}</button>
+  `;
+  document.getElementById('btn-next').addEventListener('click', nextAfterStandings);
+}
+
+function renderDeciderSetup(){
+  app.innerHTML = `
+    <div class="badge gold">Desempate pelo 1º lugar</div>
+    <div class="card">
+      <h2>Empate na liderança</h2>
+      <div class="hint">Jogadores empatados: ${state.decider.players.map(p=>p.name).join(', ')}.</div>
+      <div class="rule-note">Partida decisiva de até 45 minutos entre os empatados, servindo exclusivamente para definir o campeão.</div>
+      <label>Duração (minutos)</label>
+      <input type="number" id="in-decider-min" min="5" max="90" value="${state.decider.minutes}">
+      <button class="btn" id="btn-start-decider">Iniciar partida decisiva</button>
+    </div>
+  `;
+  document.getElementById('btn-start-decider').addEventListener('click', ()=>{
+    state.decider.minutes = parseInt(document.getElementById('in-decider-min').value) || 45;
+    startDeciderRound();
+  });
+}
+
+function renderDeciderRound(){
+  app.innerHTML = `
+    <div class="badge gold">Partida decisiva</div>
+    <div class="card">
+      <div id="timer-display" class="timer${state.timerSeconds===0?' done':''}">${fmtTime(state.timerSeconds)}</div>
+      <div class="timer-row">
+        <button class="btn secondary" id="btn-toggle" style="flex:1;">${state.timerRunning?'Pausar':'Iniciar cronômetro'}</button>
+        <button class="btn ghost" id="btn-reset" style="flex:0 0 auto;padding:13px 16px;">Zerar</button>
+      </div>
+      <button class="btn" id="btn-results">Registrar resultado</button>
+    </div>
+    <div class="table-block">
+      <h3>Mesa final</h3>
+      ${state.decider.table.map(pid=>`<div class="player-row"><span>${playerName(pid)}</span></div>`).join('')}
+    </div>
+  `;
+  document.getElementById('btn-toggle').addEventListener('click', toggleTimer);
+  document.getElementById('btn-reset').addEventListener('click', resetTimer);
+  document.getElementById('btn-results').addEventListener('click', goDeciderResults);
+}
+
+function renderDeciderResults(){
+  const res = state.deciderResult;
+  app.innerHTML = `
+    <div class="badge gold">Resultado da decisão</div>
+    <div class="table-block">
+      <div class="mode-toggle">
+        <button id="mode-winner" class="${res.mode==='winner'?'active':''}">Houve vencedor</button>
+        <button id="mode-draw" class="${res.mode==='draw'?'active':''}">Partida Empatada</button>
+      </div>
+      <div id="decider-body"></div>
+    </div>
+    <div id="err" class="error"></div>
+    <button class="btn" id="btn-confirm">Confirmar</button>
+  `;
+  renderDeciderBody();
+  document.getElementById('mode-winner').addEventListener('click', ()=>{ res.mode='winner'; render(); });
+  document.getElementById('mode-draw').addEventListener('click', ()=>{ res.mode='draw'; render(); });
+  document.getElementById('btn-confirm').addEventListener('click', confirmDecider);
+}
+
+function renderDeciderBody(){
+  const body = document.getElementById('decider-body');
+  const res = state.deciderResult;
+  if(res.mode==='winner'){
+    body.innerHTML = state.decider.table.map(pid=>`
+      <label class="radio-row">
+        <input type="radio" name="decider-winner" value="${pid}" ${res.winner===pid?'checked':''}>
+        ${playerName(pid)}
+      </label>`).join('');
+    body.querySelectorAll('input').forEach(inp=> inp.addEventListener('change', ()=> res.winner = inp.value));
+  } else {
+    body.innerHTML = `<div class="hint" style="margin-bottom:8px;">Marque quem sobreviveu. Se mais de um sobreviver, haverá nova partida decisiva só entre eles.</div>` +
+      state.decider.table.map(pid=>`
+      <label class="check-row">
+        <input type="checkbox" value="${pid}" ${res.survivors.includes(pid)?'checked':''}>
+        ${playerName(pid)}
+      </label>`).join('');
+    body.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('change', ()=>{
+        const idx = res.survivors.indexOf(inp.value);
+        if(inp.checked && idx<0) res.survivors.push(inp.value);
+        if(!inp.checked && idx>=0) res.survivors.splice(idx,1);
+      });
+    });
+  }
+}
+
+function renderChampion(){
+  app.innerHTML = `
+    <div class="card champion-box">
+      <div class="trophy">&#127942;</div>
+      <h2>${state.champion.name}</h2>
+      <p>Campeão do torneio</p>
+    </div>
+    <div class="card">
+      <h3 style="color:var(--gold);font-size:14px;margin-bottom:10px;">Classificação final</h3>
+      ${renderStandingsTable(state.players)}
+    </div>
+    <button class="btn secondary" id="btn-reset">Novo campeonato</button>
+  `;
+  document.getElementById('btn-reset').addEventListener('click', resetApp);
+}
+
+render();
+</script>
+</body>
+</html>
