@@ -20,6 +20,6 @@ Depois, no GitHub, abra **Settings > Pages**, selecione **Deploy from a branch**
 
 O endereco sera:
 
-`https://victor-araujol.github.io/CALCULADORA_CAMP_COMMANDER/`
+`https://victor-araujol.github.io/calculadora_camp_comander/`
 
 Pode levar alguns minutos para ficar disponivel. O arquivo `index.html` e o ponto de entrada exigido pelo GitHub Pages.

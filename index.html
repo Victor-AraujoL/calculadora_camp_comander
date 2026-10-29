@@ -119,9 +119,12 @@ const state = {
   timerSeconds: 0,
   timerRunning: false,
   timerInterval: null,
+  timerEnd: null,
   tableResults: {},
   decider: null
 };
+
+let wakeLock = null;
 
 function computeTableSizes(n){
   const q = Math.floor(n/4), r = n%4;
@@ -174,36 +177,67 @@ function startRound(roundNum){
     pointValues.forEach(v=>{ ordered.push(...shuffle(byPoints[v])); });
   }
   state.tables = assignTables(ordered);
+  stopTimer();
   state.timerSeconds = state.minutes*60;
-  state.timerRunning = false;
-  clearInterval(state.timerInterval);
   state.screen = 'round';
   render();
 }
 
+// O tempo restante vem do relógio (timerEnd), não da contagem de ticks:
+// com a tela bloqueada o navegador congela o setInterval.
 function toggleTimer(){
   if(state.timerRunning){
-    clearInterval(state.timerInterval);
-    state.timerRunning = false;
+    tickTimer();
+    stopTimer();
   } else {
     state.timerRunning = true;
-    state.timerInterval = setInterval(()=>{
-      if(state.timerSeconds > 0){
-        state.timerSeconds--;
-        updateTimerDisplay();
-      } else {
-        clearInterval(state.timerInterval);
-        state.timerRunning = false;
-        updateTimerDisplay();
-      }
-    }, 1000);
+    state.timerEnd = Date.now() + state.timerSeconds*1000;
+    state.timerInterval = setInterval(tickTimer, 250);
+    requestWakeLock();
   }
   render();
 }
 
-function resetTimer(){
+function tickTimer(){
+  state.timerSeconds = Math.max(0, Math.ceil((state.timerEnd - Date.now())/1000));
+  if(state.timerSeconds===0) stopTimer();
+  updateTimerDisplay();
+}
+
+function stopTimer(){
   clearInterval(state.timerInterval);
   state.timerRunning = false;
+  state.timerEnd = null;
+  releaseWakeLock();
+}
+
+async function requestWakeLock(){
+  if(!('wakeLock' in navigator)) return;
+  try{
+    const lock = await navigator.wakeLock.request('screen');
+    if(!state.timerRunning || wakeLock){ lock.release(); return; }
+    wakeLock = lock;
+    lock.addEventListener('release', ()=>{ if(wakeLock===lock) wakeLock = null; });
+  }catch(e){}
+}
+
+function releaseWakeLock(){
+  if(wakeLock){
+    const lock = wakeLock;
+    wakeLock = null;
+    lock.release().catch(()=>{});
+  }
+}
+
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='visible' && state.timerRunning){
+    tickTimer();
+    if(state.timerRunning) requestWakeLock();
+  }
+});
+
+function resetTimer(){
+  stopTimer();
   state.timerSeconds = (state.screen==='decider-round' ? state.decider.minutes : state.minutes)*60;
   render();
 }
@@ -214,6 +248,8 @@ function updateTimerDisplay(){
     el.textContent = fmtTime(state.timerSeconds);
     el.className = 'timer' + (state.timerSeconds===0 ? ' done':'');
   }
+  const btn = document.getElementById('btn-toggle');
+  if(btn) btn.textContent = state.timerRunning ? 'Pausar' : 'Iniciar cronômetro';
 }
 
 function playerName(id){
@@ -222,8 +258,7 @@ function playerName(id){
 }
 
 function goResults(){
-  clearInterval(state.timerInterval);
-  state.timerRunning = false;
+  stopTimer();
   state.tables.forEach((t,i)=>{
     if(!state.tableResults[i]) state.tableResults[i] = { mode:'winner', winner:null, survivors:[] };
   });
@@ -298,17 +333,15 @@ function checkFinal(){
 
 function startDeciderRound(){
   state.decider.table = state.decider.players.map(p=>p.id);
+  stopTimer();
   state.timerSeconds = state.decider.minutes*60;
-  state.timerRunning = false;
-  clearInterval(state.timerInterval);
   state.deciderResult = { mode:'winner', winner:null, survivors:[] };
   state.screen = 'decider-round';
   render();
 }
 
 function goDeciderResults(){
-  clearInterval(state.timerInterval);
-  state.timerRunning = false;
+  stopTimer();
   state.screen = 'decider-results';
   render();
 }
@@ -336,11 +369,11 @@ function confirmDecider(){
 }
 
 function resetApp(){
-  clearInterval(state.timerInterval);
+  stopTimer();
   Object.assign(state, {
     screen:'setup', n:8, rounds:3, minutes:60, tableSizes:[], players:[],
     currentRound:1, tables:[], timerSeconds:0, timerRunning:false, timerInterval:null,
-    tableResults:{}, decider:null
+    timerEnd:null, tableResults:{}, decider:null
   });
   render();
 }
