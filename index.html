@@ -257,7 +257,7 @@ function confirmRoundResults(){
     if(res.mode==='winner'){
       t.forEach(pid=>{
         const p = state.players.find(x=>x.id===pid);
-        p.points += (pid===res.winner ? 2 : 0);
+        p.points += (pid===res.winner ? 3 : 0);
       });
     } else {
       t.forEach(pid=>{
